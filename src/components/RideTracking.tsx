@@ -8,6 +8,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Map from './Map';
 
+interface Driver {
+  first_name: string;
+  last_name: string;
+  phone: string;
+  vehicle_make: string;
+  vehicle_model: string;
+  vehicle_plate: string;
+  rating: number;
+}
+
 interface Ride {
   id: string;
   pickup_address: string;
@@ -20,15 +30,7 @@ interface Ride {
   estimated_price: number;
   distance: number;
   estimated_duration: number;
-  driver?: {
-    first_name: string;
-    last_name: string;
-    phone: string;
-    vehicle_make: string;
-    vehicle_model: string;
-    vehicle_plate: string;
-    rating: number;
-  };
+  driver?: Driver;
 }
 
 const RideTracking = () => {
@@ -45,23 +47,38 @@ const RideTracking = () => {
         .select(`
           *,
           driver:drivers(
-            first_name:profiles!drivers_id_fkey(first_name),
-            last_name:profiles!drivers_id_fkey(last_name),
-            phone:profiles!drivers_id_fkey(phone),
             vehicle_make,
             vehicle_model,
             vehicle_plate,
-            rating
+            rating,
+            profiles!drivers_id_fkey(
+              first_name,
+              last_name,
+              phone
+            )
           )
         `)
         .eq('rider_id', user.id)
         .in('status', ['requested', 'accepted', 'in_progress'])
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
-        setCurrentRide(data);
+        // Restructurer les données pour correspondre à l'interface Driver
+        const rideData = {
+          ...data,
+          driver: data.driver ? {
+            first_name: data.driver.profiles?.first_name || '',
+            last_name: data.driver.profiles?.last_name || '',
+            phone: data.driver.profiles?.phone || '',
+            vehicle_make: data.driver.vehicle_make || '',
+            vehicle_model: data.driver.vehicle_model || '',
+            vehicle_plate: data.driver.vehicle_plate || '',
+            rating: data.driver.rating || 5
+          } : undefined
+        };
+        setCurrentRide(rideData);
       }
       setLoading(false);
     };

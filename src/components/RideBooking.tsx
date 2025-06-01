@@ -18,7 +18,9 @@ interface Location {
   address: string;
 }
 
-const vehicleTypes = [
+type VehicleType = 'standard' | 'familiale' | 'luxe';
+
+const vehicleTypes: { id: VehicleType; name: string; icon: string; description: string; multiplier: number }[] = [
   { 
     id: 'standard', 
     name: 'Standard', 
@@ -49,7 +51,7 @@ const RideBooking = () => {
   
   const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
   const [destinationLocation, setDestinationLocation] = useState<Location | null>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState('standard');
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleType>('standard');
   const [routeInfo, setRouteInfo] = useState<any>(null);
   const [pickupAddress, setPickupAddress] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
@@ -96,7 +98,7 @@ const RideBooking = () => {
 
   useEffect(() => {
     if (pickupLocation && destinationLocation) {
-      calculateRoute(pickupLocation, destinationLocation, selectedVehicle as any)
+      calculateRoute(pickupLocation, destinationLocation, selectedVehicle)
         .then(setRouteInfo);
     }
   }, [pickupLocation, destinationLocation, selectedVehicle]);

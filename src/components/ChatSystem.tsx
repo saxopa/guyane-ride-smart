@@ -46,30 +46,24 @@ const ChatSystem: React.FC<ChatSystemProps> = ({ recipientId, recipientName, rid
   useEffect(() => {
     if (!user) return;
 
-    // Créer une table messages si elle n'existe pas déjà
-    const createMessagesTable = async () => {
-      const { error } = await supabase.rpc('create_messages_table');
-      if (error) {
-        console.log('Table messages existe déjà ou erreur:', error);
-      }
-    };
-
-    createMessagesTable();
     fetchMessages();
 
-    // Écouter les nouveaux messages en temps réel
+    // Écouter les nouveaux messages en temps réel - correction du filtre
     const subscription = supabase
       .channel('messages')
       .on('postgres_changes', 
         { 
           event: 'INSERT', 
           schema: 'public', 
-          table: 'messages',
-          filter: `or(and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id}))`
+          table: 'messages'
         },
         (payload) => {
           const newMessage = payload.new as Message;
-          setMessages(prev => [...prev, newMessage]);
+          // Vérifier si le message concerne cette conversation
+          if ((newMessage.sender_id === user.id && newMessage.receiver_id === recipientId) ||
+              (newMessage.sender_id === recipientId && newMessage.receiver_id === user.id)) {
+            setMessages(prev => [...prev, newMessage]);
+          }
         }
       )
       .subscribe();
