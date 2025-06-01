@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Car, Shield, Star, Clock, Phone, Mail, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import Navigation from '@/components/Navigation';
 import AuthModal from '@/components/AuthModal';
 import HeroSection from '@/components/HeroSection';
@@ -14,12 +16,25 @@ import ContactSection from '@/components/ContactSection';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authType, setAuthType] = useState<'rider' | 'driver'>('rider');
 
   const handleGetStarted = (type: 'rider' | 'driver') => {
-    setAuthType(type);
-    setAuthModalOpen(true);
+    if (user) {
+      // User is already logged in, navigate to appropriate dashboard
+      if (profile?.role === 'driver') {
+        navigate('/driver');
+      } else if (profile?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/rider');
+      }
+    } else {
+      // User is not logged in, show auth modal or navigate to auth page
+      navigate('/auth');
+    }
   };
 
   return (

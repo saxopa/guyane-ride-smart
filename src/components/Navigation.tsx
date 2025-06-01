@@ -1,21 +1,50 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Car, Menu, X } from 'lucide-react';
+import { Car, Menu, X, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useProfile } from '@/hooks/useProfile';
 
 interface NavigationProps {
-  onAuthClick: (type: 'rider' | 'driver') => void;
+  onAuthClick?: (type: 'rider' | 'driver') => void;
 }
 
 const Navigation = ({ onAuthClick }: NavigationProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
+  const navigate = useNavigate();
+
+  const handleAuthClick = (type: 'rider' | 'driver') => {
+    if (onAuthClick) {
+      onAuthClick(type);
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleDashboardNavigation = () => {
+    if (profile?.role === 'driver') {
+      navigate('/driver');
+    } else if (profile?.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/rider');
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 bg-tropical-gradient rounded-lg flex items-center justify-center">
               <Car className="w-6 h-6 text-white" />
             </div>
@@ -34,19 +63,45 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
             <a href="#contact" className="text-gray-600 hover:text-tropical-600 transition-colors">
               Contact
             </a>
-            <Button 
-              variant="outline" 
-              onClick={() => onAuthClick('driver')}
-              className="border-tropical-600 text-tropical-600 hover:bg-tropical-50"
-            >
-              Devenir conducteur
-            </Button>
-            <Button 
-              onClick={() => onAuthClick('rider')}
-              className="bg-tropical-gradient hover:opacity-90"
-            >
-              Commander
-            </Button>
+            
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  Bonjour, {profile?.first_name || 'Utilisateur'}
+                </span>
+                <Button 
+                  variant="outline" 
+                  onClick={handleDashboardNavigation}
+                  className="border-tropical-600 text-tropical-600 hover:bg-tropical-50"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Tableau de bord
+                </Button>
+                <Button 
+                  variant="ghost"
+                  onClick={handleSignOut}
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleAuthClick('driver')}
+                  className="border-tropical-600 text-tropical-600 hover:bg-tropical-50"
+                >
+                  Devenir conducteur
+                </Button>
+                <Button 
+                  onClick={() => handleAuthClick('rider')}
+                  className="bg-tropical-gradient hover:opacity-90"
+                >
+                  Commander
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Menu Mobile Toggle */}
@@ -74,19 +129,43 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
               <a href="#contact" className="text-gray-600 hover:text-tropical-600 transition-colors">
                 Contact
               </a>
-              <Button 
-                variant="outline" 
-                onClick={() => onAuthClick('driver')}
-                className="border-tropical-600 text-tropical-600 hover:bg-tropical-50"
-              >
-                Devenir conducteur
-              </Button>
-              <Button 
-                onClick={() => onAuthClick('rider')}
-                className="bg-tropical-gradient hover:opacity-90"
-              >
-                Commander
-              </Button>
+              
+              {user ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDashboardNavigation}
+                    className="border-tropical-600 text-tropical-600 hover:bg-tropical-50"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Tableau de bord
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={handleSignOut}
+                    className="border-red-600 text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Déconnexion
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleAuthClick('driver')}
+                    className="border-tropical-600 text-tropical-600 hover:bg-tropical-50"
+                  >
+                    Devenir conducteur
+                  </Button>
+                  <Button 
+                    onClick={() => handleAuthClick('rider')}
+                    className="bg-tropical-gradient hover:opacity-90"
+                  >
+                    Commander
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
