@@ -1,73 +1,131 @@
-# Welcome to your Lovable project
+# Fasterz - Application VTC pour la Guyane 🚗
 
-## Project info
+Fasterz est une application de VTC (Voiture de Transport avec Chauffeur) moderne conçue spécifiquement pour la Guyane française. Elle connecte les passagers avec des conducteurs professionnels pour des déplacements sûrs et efficaces.
 
-**URL**: https://lovable.dev/projects/aa71eca8-10f2-44de-961c-83b56816f753
+## Fonctionnalités principales 🌟
 
-## How can I edit this code?
+### Pour les passagers
+- Réservation de courses en temps réel
+- Suivi en direct du trajet
+- Estimation des prix avant la course
+- Système de notation des conducteurs
+- Historique des courses
+- Chat intégré avec le conducteur
+- Support client 24/7
 
-There are several ways of editing your application.
+### Pour les conducteurs
+- Tableau de bord professionnel
+- Gestion des courses en temps réel
+- Suivi des gains
+- Navigation optimisée
+- Statut en ligne/hors ligne
+- Support dédié
 
-**Use Lovable**
+## Technologies utilisées 💻
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/aa71eca8-10f2-44de-961c-83b56816f753) and start prompting.
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Supabase (Base de données et authentification)
+- React Router
+- React Query
+- Leaflet (Cartographie)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Prérequis 📋
 
-**Use your preferred IDE**
+- Node.js 18 ou supérieur
+- npm ou yarn
+- Un compte Supabase (pour le backend)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Installation 🛠️
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Clonez le repository :
+```bash
+git clone <votre-repo-url>
+cd fasterz
+```
 
-Follow these steps:
+2. Installez les dépendances :
+```bash
+npm install
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Créez un fichier `.env` à la racine du projet avec vos variables d'environnement :
+```env
+VITE_SUPABASE_URL=votre_url_supabase
+VITE_SUPABASE_ANON_KEY=votre_clé_anon_supabase
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. Lancez le serveur de développement :
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Structure du projet 📁
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/     # Composants réutilisables
+├── hooks/         # Hooks personnalisés
+├── integrations/  # Intégrations (Supabase, etc.)
+├── lib/           # Utilitaires et helpers
+├── pages/         # Pages de l'application
+└── styles/        # Styles globaux
+```
 
-**Use GitHub Codespaces**
+## Utilisation 🚀
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### En tant que passager
 
-## What technologies are used for this project?
+1. Créez un compte passager
+2. Connectez-vous à l'application
+3. Saisissez votre destination
+4. Choisissez votre type de véhicule
+5. Confirmez la course
+6. Suivez votre trajet en temps réel
 
-This project is built with:
+### En tant que conducteur
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Créez un compte conducteur
+2. Complétez votre profil avec les informations du véhicule
+3. Attendez la validation de votre compte
+4. Connectez-vous au tableau de bord conducteur
+5. Passez en ligne pour recevoir des courses
+6. Acceptez ou refusez les courses
 
-## How can I deploy this project?
+## Fonctionnalités de sécurité 🔒
 
-Simply open [Lovable](https://lovable.dev/projects/aa71eca8-10f2-44de-961c-83b56816f753) and click on Share -> Publish.
+- Authentification sécurisée
+- Vérification des conducteurs
+- Suivi GPS en temps réel
+- Système de notation bidirectionnel
+- Support d'urgence 24/7
 
-## Can I connect a custom domain to my Lovable project?
+## Support 💬
 
-Yes, you can!
+Pour toute assistance :
+- Email : support@fasterz.gf
+- Téléphone : +594 XXX XXX XXX
+- Chat in-app disponible 24/7
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Contribution 🤝
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+## Licence 📄
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## À venir 🔜
+
+- Intégration de paiements mobiles
+- Courses programmées
+- Mode famille
+- Programme de fidélité
+- Version internationale
