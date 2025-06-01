@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +55,7 @@ const RideBooking = () => {
   const [pickupAddress, setPickupAddress] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
   const [isBooking, setIsBooking] = useState(false);
+  const [addressesValid, setAddressesValid] = useState(false);
 
   const handleAddressSearch = async (address: string, type: 'pickup' | 'destination') => {
     if (!address.trim()) return;
@@ -66,9 +66,16 @@ const RideBooking = () => {
       
       if (type === 'pickup') {
         setPickupLocation(locationData);
+        setPickupAddress(address);
       } else {
         setDestinationLocation(locationData);
+        setDestinationAddress(address);
       }
+
+      toast({
+        title: "Adresse trouvée",
+        description: address
+      });
     } else {
       toast({
         title: "Adresse non trouvée",
@@ -77,6 +84,11 @@ const RideBooking = () => {
       });
     }
   };
+
+  useEffect(() => {
+    // Valider que les deux adresses sont renseignées
+    setAddressesValid(!!pickupLocation && !!destinationLocation);
+  }, [pickupLocation, destinationLocation]);
 
   const handleMapLocationSelect = (lat: number, lng: number, address: string) => {
     if (!pickupLocation) {
@@ -271,7 +283,7 @@ const RideBooking = () => {
 
           <Button 
             onClick={handleBookRide}
-            disabled={!pickupLocation || !destinationLocation || !routeInfo || isBooking}
+            disabled={!addressesValid || !routeInfo || isBooking}
             className="w-full bg-tropical-gradient hover:opacity-90"
           >
             {isBooking ? 'Réservation...' : 'Réserver la course'}
