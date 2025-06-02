@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Map from '@/components/Map';
 import ChatSystem from '@/components/ChatSystem';
 import RideRequestCard from '@/components/RideRequestCard';
+import RideTracking from '@/components/RideTracking';
 import { useToast } from '@/hooks/use-toast';
 
 const DriverDashboard = () => {
@@ -260,8 +261,9 @@ const DriverDashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="rides">Courses</TabsTrigger>
+            <TabsTrigger value="accepted">Réservation</TabsTrigger>
             <TabsTrigger value="map">Carte</TabsTrigger>
             <TabsTrigger value="earnings">Gains</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
@@ -306,6 +308,18 @@ const DriverDashboard = () => {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="accepted" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Course acceptée</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Affichage du suivi de la course acceptée pour le conducteur */}
+                <RideTracking mode="driver" />
               </CardContent>
             </Card>
           </TabsContent>
