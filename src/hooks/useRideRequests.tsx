@@ -53,6 +53,7 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
         .is('driver_id', null)
         .order('created_at', { ascending: false });
 
+      console.log('DEBUG rides from supabase:', rides);
       if (error) {
         console.error('Error fetching ride requests:', error);
         throw error;
