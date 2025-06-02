@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +24,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -37,7 +35,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -102,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -111,20 +108,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
 
-      if (error) {
+      if (authError) {
         toast({
           title: "Erreur d'inscription",
-          description: error.message,
+          description: authError.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte.",
-        });
+        return { error: authError };
       }
 
-      return { error };
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user!.id,
+          email: email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          phone: userData.phone,
+          role: userData.role,
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        toast({
+          title: "Erreur de création du profil",
+          description: profileError.message,
+          variant: "destructive",
+        });
+        return { error: profileError };
+      }
+
+      // If user is a driver, create driver profile
+      if (userData.role === 'driver') {
+        const { error: driverError } = await supabase
+          .from('drivers')
+          .insert({
+            id: authData.user!.id,
+            license_number: userData.licenseNumber,
+            vehicle_make: userData.vehicleMake,
+            vehicle_model: userData.vehicleModel,
+            vehicle_year: parseInt(userData.vehicleYear),
+            vehicle_color: userData.vehicleColor,
+            vehicle_plate: userData.vehiclePlate,
+            vehicle_type: userData.vehicleType || 'standard',
+            status: 'offline',
+            rating: 5,
+            total_rides: 0,
+            is_verified: false
+          });
+
+        if (driverError) {
+          console.error('Error creating driver profile:', driverError);
+          toast({
+            title: "Erreur de création du profil conducteur",
+            description: driverError.message,
+            variant: "destructive",
+          });
+          return { error: driverError };
+        }
+      }
+
+      toast({
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec succès.",
+      });
+
+      return { error: null };
     } catch (error) {
       console.error('Error in signUp:', error);
       toast({
@@ -138,7 +188,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Don't attempt to sign out if there's no session
       if (!session) {
         console.log('No session to sign out from');
         return;
@@ -148,7 +197,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('Error signing out:', error);
-        // Don't show error toast for sign out failures
       } else {
         toast({
           title: "Déconnexion",
@@ -157,7 +205,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error) {
       console.error('Error in signOut:', error);
-      // Silently handle sign out errors
     }
   };
 
