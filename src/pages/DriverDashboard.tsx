@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,11 +11,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Map from '@/components/Map';
 import ChatSystem from '@/components/ChatSystem';
+import { useToast } from '@/hooks/use-toast';
 
 const DriverDashboard = () => {
   const { user, signOut } = useAuth();
   const { profile, driverProfile, updateDriverStatus, updateLocation } = useProfile();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('rides');
   const [isOnline, setIsOnline] = useState(false);
   const [rides, setRides] = useState([]);
@@ -49,12 +50,23 @@ const DriverDashboard = () => {
   }, [user]);
 
   const handleToggleOnline = async () => {
-    if (!driverProfile) return;
+    if (!driverProfile) {
+      toast({
+        title: "Erreur",
+        description: "Profil conducteur non configuré",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    const newStatus = isOnline ? 'offline' : 'available';
-    const { error } = await updateDriverStatus(newStatus);
-    
-    if (!error) {
+    try {
+      const newStatus = isOnline ? 'offline' : 'available';
+      const { error } = await updateDriverStatus(newStatus);
+      
+      if (error) {
+        throw error;
+      }
+
       setIsOnline(!isOnline);
       
       if (newStatus === 'available') {
@@ -66,10 +78,29 @@ const DriverDashboard = () => {
             },
             (error) => {
               console.error('Erreur géolocalisation:', error);
+              toast({
+                title: "Erreur de géolocalisation",
+                description: "Impossible d'obtenir votre position",
+                variant: "destructive"
+              });
             }
           );
         }
       }
+
+      toast({
+        title: newStatus === 'available' ? "Vous êtes en ligne" : "Vous êtes hors ligne",
+        description: newStatus === 'available' 
+          ? "Vous pouvez maintenant recevoir des courses" 
+          : "Vous ne recevrez plus de courses",
+      });
+    } catch (error) {
+      console.error('Erreur toggle status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de changer votre statut",
+        variant: "destructive"
+      });
     }
   };
 
