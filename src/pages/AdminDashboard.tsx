@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  
+
   const stats = {
     totalUsers: 10547,
     activeDrivers: 432,
@@ -54,7 +53,7 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')}> {/* Bouton de navigation */}
                 <div className="w-8 h-8 bg-gradient-to-r from-tropical-500 to-ocean-500 rounded-lg flex items-center justify-center">
                   <Settings className="w-5 h-5 text-white" />
                 </div>
