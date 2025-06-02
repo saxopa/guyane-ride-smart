@@ -26,6 +26,8 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingRide, setAcceptingRide] = useState<string | null>(null);
+  // État pour suivre la course active du conducteur
+  const [activeRide, setActiveRide] = useState<RideRequest | null>(null);
 
   // Fonction pour calculer la distance entre deux points
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -49,6 +51,8 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
       const { data: rides, error } = await supabase
         .from('rides')
         .select('*')
+        .eq('status', 'requested') // Uniquement les courses en attente de conducteur
+        .is('driver_id', null) // Sans conducteur assigné
         .order('created_at', { ascending: false });
 
       // DEBUG : Affiche le user connecté
@@ -154,6 +158,29 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
     });
   };
 
+  // Fonction pour récupérer la course active
+  const fetchActiveRide = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('rides')
+      .select('*')
+      .eq('driver_id', user.id)
+      .in('status', ['accepted', 'in_progress'])
+      .order('created_at', { ascending: false })
+      .maybeSingle();
+
+    if (!error && data) {
+      setActiveRide(data);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchActiveRide();
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -178,6 +205,7 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
     requests,
     loading,
     acceptingRide,
+    activeRide,
     acceptRide,
     declineRide,
     refetch: fetchRideRequests
