@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,9 @@ const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [rides, setRides] = useState([]);
   const [earnings, setEarnings] = useState({ today: 0, week: 0, month: 0 });
+
+  // Récupérer les demandes de course à afficher au conducteur
+  const { requests, loading: requestsLoading, acceptRide, declineRide, refetch } = useRideRequests(driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined);
 
   useEffect(() => {
     if (driverProfile) {
@@ -70,14 +72,13 @@ const DriverDashboard = () => {
         throw error;
       }
 
-      setIsOnline(!isOnline);
-      
       if (newStatus === 'available') {
         // Demander la géolocalisation
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               await updateLocation(position.coords.latitude, position.coords.longitude);
+              setIsOnline(true); // Mettre à jour ici après succès
             },
             (error) => {
               console.error('Erreur géolocalisation:', error);
@@ -86,9 +87,14 @@ const DriverDashboard = () => {
                 description: "Impossible d'obtenir votre position",
                 variant: "destructive"
               });
+              setIsOnline(false);
             }
           );
+        } else {
+          setIsOnline(true);
         }
+      } else {
+        setIsOnline(false);
       }
 
       toast({
@@ -268,19 +274,36 @@ const DriverDashboard = () => {
                 <CardTitle>Demandes de course</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucune demande en attente</p>
-                  <p className="text-sm">
-                    {driverProfile 
-                      ? (isOnline 
-                          ? "Restez en ligne pour recevoir des demandes" 
-                          : "Passez en ligne pour recevoir des demandes"
-                        )
-                      : "Configurez votre profil pour recevoir des demandes"
-                    }
-                  </p>
-                </div>
+                {requestsLoading ? (
+                  <div className="text-center py-8 text-gray-500">Chargement...</div>
+                ) : requests.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucune demande en attente</p>
+                    <p className="text-sm">
+                      {driverProfile 
+                        ? (isOnline 
+                            ? "Restez en ligne pour recevoir des demandes" 
+                            : "Passez en ligne pour recevoir des demandes"
+                          )
+                        : "Configurez votre profil pour recevoir des demandes"
+                      }
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {requests.map((request) => (
+                      <RideRequestCard
+                        key={request.id}
+                        request={request}
+                        driverLocation={driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined}
+                        onAccept={acceptRide}
+                        onDecline={declineRide}
+                        isLoading={false}
+                      />
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
