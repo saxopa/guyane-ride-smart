@@ -132,6 +132,7 @@ const DriverDashboard = () => {
 
     if (!error) {
       await updateDriverStatus('busy');
+      navigate('/driver/tracking'); // Redirection vers le suivi de course
     }
   };
 

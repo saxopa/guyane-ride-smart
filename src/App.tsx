@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import DriverDashboard from "./pages/DriverDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DriverTrackingPage from "./pages/DriverTrackingPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +40,14 @@ const App = () => (
                   <DriverDashboard />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/driver/tracking" 
+              element={
+                <ProtectedRoute>
+                  <DriverTrackingPage />
+                </ProtectedRoute>
+              }
             />
             <Route 
               path="/admin" 

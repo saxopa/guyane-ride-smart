@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,11 @@ interface Ride {
   driver?: Driver;
 }
 
-const RideTracking = () => {
+interface RideTrackingProps {
+  mode?: 'driver' | 'rider';
+}
+
+const RideTracking: React.FC<RideTrackingProps> = ({ mode = 'rider' }) => {
   const { user } = useAuth();
   const [currentRide, setCurrentRide] = useState<Ride | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,6 +255,32 @@ const RideTracking = () => {
           />
         </CardContent>
       </Card>
+
+      {/* Options conducteur */}
+      {mode === 'driver' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Options conducteur</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col md:flex-row gap-4">
+            <Button variant="default" className="flex-1">
+              <Navigation className="w-4 h-4 mr-2" />
+              Navigation
+            </Button>
+            <Button variant="outline" className="flex-1">
+              <Phone className="w-4 h-4 mr-2" />
+              Appeler le client
+            </Button>
+            <Button variant="outline" className="flex-1">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Message au client
+            </Button>
+            <Button variant="destructive" className="flex-1">
+              Terminer la course
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
