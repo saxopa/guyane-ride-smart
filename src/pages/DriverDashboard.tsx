@@ -72,13 +72,15 @@ const DriverDashboard = () => {
         throw error;
       }
 
+      // Met à jour l'état local immédiatement pour le toggle
+      setIsOnline(!isOnline);
+
       if (newStatus === 'available') {
         // Demander la géolocalisation
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               await updateLocation(position.coords.latitude, position.coords.longitude);
-              setIsOnline(true); // Mettre à jour ici après succès
             },
             (error) => {
               console.error('Erreur géolocalisation:', error);
@@ -90,11 +92,7 @@ const DriverDashboard = () => {
               setIsOnline(false);
             }
           );
-        } else {
-          setIsOnline(true);
         }
-      } else {
-        setIsOnline(false);
       }
 
       toast({
