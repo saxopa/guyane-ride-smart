@@ -28,6 +28,24 @@ const DriverDashboard = () => {
   // Récupérer les demandes de course à afficher au conducteur
   const { requests, loading: requestsLoading, acceptRide, declineRide, refetch, acceptedRide, refetchAccepted } = useRideRequests(driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined);
 
+  // Courses en cours du conducteur
+  const [currentRides, setCurrentRides] = useState([]);
+  const [currentRidesLoading, setCurrentRidesLoading] = useState(false);
+
+  // Fonction pour charger les courses en cours
+  const fetchCurrentRides = async () => {
+    if (!user) return;
+    setCurrentRidesLoading(true);
+    const { data, error } = await supabase
+      .from('rides')
+      .select('*')
+      .eq('driver_id', user.id)
+      .in('status', ['accepted', 'in_progress'])
+      .order('created_at', { ascending: false });
+    if (!error) setCurrentRides(data || []);
+    setCurrentRidesLoading(false);
+  };
+
   useEffect(() => {
     if (driverProfile) {
       setIsOnline(driverProfile.status === 'available');
@@ -262,14 +280,40 @@ const DriverDashboard = () => {
 
         {/* Onglets conducteur : PAS d'onglet "Courses" ici */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="current">Courses en cours</TabsTrigger>
             <TabsTrigger value="accepted">Réservation</TabsTrigger>
             <TabsTrigger value="map">Carte</TabsTrigger>
             <TabsTrigger value="earnings">Gains</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
           </TabsList>
 
-          {/* Onglet "Demandes de course" supprimé pour les conducteurs */}
+          <TabsContent value="current" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Courses en cours</CardTitle>
+                <Button onClick={fetchCurrentRides} variant="outline" size="sm" disabled={currentRidesLoading}>
+                  <RefreshCw className="w-4 h-4 mr-1 animate-spin" style={{ animationPlayState: currentRidesLoading ? 'running' : 'paused' }} /> Rafraîchir
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {currentRidesLoading ? (
+                  <div className="text-center py-8 text-gray-500">Chargement...</div>
+                ) : currentRides.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucune course en cours</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {currentRides.map((ride) => (
+                      <RideTracking key={ride.id} mode="driver" ride={ride} />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="accepted" className="space-y-6">
             <Card>
