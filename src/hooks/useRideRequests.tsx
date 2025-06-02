@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -58,12 +57,11 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
         console.error('Error fetching ride requests:', error);
         throw error;
       }
-
       console.log('Ride requests fetched:', rides);
 
-      // Filtrer par distance si la position du conducteur est disponible
+      // Correction : n'appliquer le filtre distance QUE si driverLocation est défini ET valide
       let filteredRides = rides || [];
-      if (driverLocation) {
+      if (driverLocation && driverLocation.lat && driverLocation.lng) {
         const maxDistance = 15; // Distance maximale en km
         filteredRides = (rides || []).filter(ride => {
           const distance = calculateDistance(
@@ -76,7 +74,6 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
         });
         console.log(`Filtered ${filteredRides.length} rides within ${maxDistance}km`);
       }
-
       setRequests(filteredRides);
     } catch (error) {
       console.error('Error in fetchRideRequests:', error);
