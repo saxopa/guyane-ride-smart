@@ -51,7 +51,15 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
         .select('*')
         .order('created_at', { ascending: false });
 
+      // DEBUG : Affiche le user connecté
+      console.log('DEBUG user:', user);
+      // DEBUG : Affiche toutes les courses récupérées
       console.log('DEBUG rides from supabase (no filter):', rides);
+      if (rides && rides.length > 0) {
+        rides.forEach((ride, idx) => {
+          console.log(`DEBUG ride[${idx}]`, ride);
+        });
+      }
       if (error) {
         console.error('Error fetching ride requests:', error);
         throw error;
