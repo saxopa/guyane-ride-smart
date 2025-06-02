@@ -13,7 +13,6 @@ import { supabase } from '@/integrations/supabase/client';
 import Map from '@/components/Map';
 import ChatSystem from '@/components/ChatSystem';
 import RideRequestCard from '@/components/RideRequestCard';
-import RideTracking from '@/components/RideTracking';
 import { useToast } from '@/hooks/use-toast';
 
 const DriverDashboard = () => {
@@ -73,15 +72,13 @@ const DriverDashboard = () => {
         throw error;
       }
 
-      // Met à jour l'état local immédiatement pour le toggle
-      setIsOnline(!isOnline);
-
       if (newStatus === 'available') {
         // Demander la géolocalisation
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               await updateLocation(position.coords.latitude, position.coords.longitude);
+              setIsOnline(true); // Mettre à jour ici après succès
             },
             (error) => {
               console.error('Erreur géolocalisation:', error);
@@ -93,7 +90,11 @@ const DriverDashboard = () => {
               setIsOnline(false);
             }
           );
+        } else {
+          setIsOnline(true);
         }
+      } else {
+        setIsOnline(false);
       }
 
       toast({
@@ -133,7 +134,6 @@ const DriverDashboard = () => {
 
     if (!error) {
       await updateDriverStatus('busy');
-      navigate('/driver/tracking'); // Redirection vers le suivi de course
     }
   };
 
@@ -261,9 +261,8 @@ const DriverDashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="rides">Courses</TabsTrigger>
-            <TabsTrigger value="accepted">Réservation</TabsTrigger>
             <TabsTrigger value="map">Carte</TabsTrigger>
             <TabsTrigger value="earnings">Gains</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
@@ -308,18 +307,6 @@ const DriverDashboard = () => {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="accepted" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Course acceptée</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Affichage du suivi de la course acceptée pour le conducteur */}
-                <RideTracking mode="driver" />
               </CardContent>
             </Card>
           </TabsContent>

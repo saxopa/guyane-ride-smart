@@ -26,8 +26,6 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingRide, setAcceptingRide] = useState<string | null>(null);
-  // État pour suivre la course active du conducteur
-  const [activeRide, setActiveRide] = useState<RideRequest | null>(null);
 
   // Fonction pour calculer la distance entre deux points
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -50,27 +48,12 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
 
       const { data: rides, error } = await supabase
         .from('rides')
-        .select(`
-          *,
-          rider:profiles!rides_rider_id_fkey(
-            first_name,
-            last_name,
-            phone
-          )
-        `)
+        .select('*')
         .eq('status', 'requested')
         .is('driver_id', null)
         .order('created_at', { ascending: false });
 
-      // DEBUG : Affiche le user connecté
-      console.log('DEBUG user:', user);
-      // DEBUG : Affiche toutes les courses récupérées
-      console.log('DEBUG rides from supabase (no filter):', rides);
-      if (rides && rides.length > 0) {
-        rides.forEach((ride, idx) => {
-          console.log(`DEBUG ride[${idx}]`, ride);
-        });
-      }
+      console.log('DEBUG rides from supabase:', rides);
       if (error) {
         console.error('Error fetching ride requests:', error);
         throw error;
@@ -165,51 +148,22 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
     });
   };
 
-  // Fonction pour récupérer la course active
-  const fetchActiveRide = async () => {
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('rides')
-      .select('*')
-      .eq('driver_id', user.id)
-      .in('status', ['accepted', 'in_progress'])
-      .order('created_at', { ascending: false })
-      .maybeSingle();
-
-    if (!error && data) {
-      setActiveRide(data);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchActiveRide();
-    }
-  }, [user]);
-
   useEffect(() => {
     if (!user) return;
-    
-    // Récupérer les demandes au montage
-    fetchRideRequests();
 
-    // Mettre en place un rafraîchissement toutes les 30 secondes
-    const interval = setInterval(fetchRideRequests, 30000);
-
-    // Mettre en place un écouteur temps réel pour les nouvelles demandes
+    // Écoute en temps réel (optionnel, peut être supprimée si on veut strictement du manuel)
     const subscription = supabase
-      .channel('ride_requests')
+      .channel('ride_requests_driver')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'rides' },
-        () => {
-          fetchRideRequests();
+        { event: 'INSERT', schema: 'public', table: 'rides', filter: 'status=eq.requested' },
+        (payload) => {
+          // Optionnel : notification visuelle
+          // fetchRideRequests();
         }
       )
       .subscribe();
 
     return () => {
-      clearInterval(interval);
       subscription.unsubscribe();
     };
   }, [user, driverLocation]);
@@ -218,7 +172,6 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
     requests,
     loading,
     acceptingRide,
-    activeRide,
     acceptRide,
     declineRide,
     refetch: fetchRideRequests
