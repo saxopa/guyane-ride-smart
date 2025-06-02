@@ -150,55 +150,14 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
   useEffect(() => {
     if (!user) return;
 
-    fetchRideRequests();
-
-    // Écouter les nouvelles demandes de course en temps réel
+    // Écoute en temps réel (optionnel, peut être supprimée si on veut strictement du manuel)
     const subscription = supabase
       .channel('ride_requests_driver')
       .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'rides',
-          filter: 'status=eq.requested'
-        },
+        { event: 'INSERT', schema: 'public', table: 'rides', filter: 'status=eq.requested' },
         (payload) => {
-          console.log('New ride request:', payload.new);
-          
-          // Vérifier la distance si la position est disponible
-          if (driverLocation) {
-            const distance = calculateDistance(
-              driverLocation.lat,
-              driverLocation.lng,
-              payload.new.pickup_latitude,
-              payload.new.pickup_longitude
-            );
-            
-            if (distance <= 15) { // 15km max
-              setRequests(prev => [payload.new as RideRequest, ...prev]);
-              
-              // Notification sonore ou visuelle
-              toast({
-                title: "Nouvelle demande de course",
-                description: `Course à ${distance.toFixed(1)}km de votre position`,
-              });
-            }
-          } else {
-            setRequests(prev => [payload.new as RideRequest, ...prev]);
-          }
-        }
-      )
-      .on('postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'rides'
-        },
-        (payload) => {
-          // Retirer les courses qui ont été acceptées par d'autres conducteurs
-          if (payload.new.status !== 'requested') {
-            setRequests(prev => prev.filter(req => req.id !== payload.new.id));
-          }
+          // Optionnel : notification visuelle
+          // fetchRideRequests();
         }
       )
       .subscribe();

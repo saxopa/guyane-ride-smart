@@ -270,8 +270,11 @@ const DriverDashboard = () => {
 
           <TabsContent value="rides" className="space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Demandes de course</CardTitle>
+                <Button onClick={refetch} variant="outline" size="sm">
+                  <RefreshCw className="w-4 h-4 mr-1" /> Rafraîchir
+                </Button>
               </CardHeader>
               <CardContent>
                 {requestsLoading ? (
