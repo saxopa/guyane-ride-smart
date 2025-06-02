@@ -26,7 +26,7 @@ const DriverDashboard = () => {
   const [earnings, setEarnings] = useState({ today: 0, week: 0, month: 0 });
 
   // Récupérer les demandes de course à afficher au conducteur
-  const { requests, loading: requestsLoading, acceptRide, declineRide, refetch } = useRideRequests(driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined);
+  const { requests, loading: requestsLoading, acceptRide, declineRide, refetch, acceptedRide, refetchAccepted } = useRideRequests(driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined);
 
   useEffect(() => {
     if (driverProfile) {
@@ -261,8 +261,9 @@ const DriverDashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="rides">Courses</TabsTrigger>
+            <TabsTrigger value="accepted">Réservation</TabsTrigger>
             <TabsTrigger value="map">Carte</TabsTrigger>
             <TabsTrigger value="earnings">Gains</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
@@ -305,6 +306,27 @@ const DriverDashboard = () => {
                         isLoading={false}
                       />
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="accepted" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Course acceptée</CardTitle>
+                <Button onClick={refetchAccepted} variant="outline" size="sm">
+                  <RefreshCw className="w-4 h-4 mr-1" /> Rafraîchir
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {acceptedRide ? (
+                  <RideTracking mode="driver" ride={acceptedRide} />
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucune course acceptée</p>
                   </div>
                 )}
               </CardContent>

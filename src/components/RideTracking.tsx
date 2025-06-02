@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,12 +32,22 @@ interface Ride {
   driver?: Driver;
 }
 
-const RideTracking = () => {
+interface RideTrackingProps {
+  mode?: 'driver' | 'rider';
+  ride?: any;
+}
+
+const RideTracking: React.FC<RideTrackingProps> = ({ mode = 'rider', ride }) => {
   const { user } = useAuth();
-  const [currentRide, setCurrentRide] = useState<Ride | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [currentRide, setCurrentRide] = useState<any>(ride || null);
+  const [loading, setLoading] = useState(!ride);
 
   useEffect(() => {
+    if (ride) {
+      setCurrentRide(ride);
+      setLoading(false);
+      return;
+    }
     if (!user) return;
 
     const fetchCurrentRide = async () => {
@@ -103,7 +112,7 @@ const RideTracking = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [user]);
+  }, [user, ride]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
