@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { Car, MapPin, Clock, Star, Euro, MessageCircle, Phone, User, LogOut, Navigation } from 'lucide-react';
+import { Car, MapPin, Clock, Star, Euro, MessageCircle, Phone, User, LogOut, Navigation, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useRideRequests } from '@/hooks/useRideRequests';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Map from '@/components/Map';
 import ChatSystem from '@/components/ChatSystem';
+import RideRequestCard from '@/components/RideRequestCard';
 import { useToast } from '@/hooks/use-toast';
 
 const DriverDashboard = () => {
