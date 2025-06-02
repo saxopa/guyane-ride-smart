@@ -243,7 +243,7 @@ const DriverDashboard = () => {
         </div>
 
         {/* Message si profil en cours de création */}
-        {!driverProfile && (
+        {driverProfile === null || driverProfile === undefined ? (
           <Card className="mb-6">
             <CardContent className="p-4">
               <div className="text-center">
@@ -258,59 +258,18 @@ const DriverDashboard = () => {
               </div>
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
+        {/* Onglets conducteur : PAS d'onglet "Courses" ici */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="rides">Courses</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="accepted">Réservation</TabsTrigger>
             <TabsTrigger value="map">Carte</TabsTrigger>
             <TabsTrigger value="earnings">Gains</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="rides" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Demandes de course</CardTitle>
-                <Button onClick={refetch} variant="outline" size="sm">
-                  <RefreshCw className="w-4 h-4 mr-1" /> Rafraîchir
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {requestsLoading ? (
-                  <div className="text-center py-8 text-gray-500">Chargement...</div>
-                ) : requests.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Aucune demande en attente</p>
-                    <p className="text-sm">
-                      {driverProfile 
-                        ? (isOnline 
-                            ? "Restez en ligne pour recevoir des demandes" 
-                            : "Passez en ligne pour recevoir des demandes"
-                          )
-                        : "Configurez votre profil pour recevoir des demandes"
-                      }
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {requests.map((request) => (
-                      <RideRequestCard
-                        key={request.id}
-                        request={request}
-                        driverLocation={driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined}
-                        onAccept={acceptRide}
-                        onDecline={declineRide}
-                        isLoading={false}
-                      />
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Onglet "Demandes de course" supprimé pour les conducteurs */}
 
           <TabsContent value="accepted" className="space-y-6">
             <Card>
