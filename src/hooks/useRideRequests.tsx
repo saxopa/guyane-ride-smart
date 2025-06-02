@@ -50,9 +50,16 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
 
       const { data: rides, error } = await supabase
         .from('rides')
-        .select('*')
-        .eq('status', 'requested') // Uniquement les courses en attente de conducteur
-        .is('driver_id', null) // Sans conducteur assigné
+        .select(`
+          *,
+          rider:profiles!rides_rider_id_fkey(
+            first_name,
+            last_name,
+            phone
+          )
+        `)
+        .eq('status', 'requested')
+        .is('driver_id', null)
         .order('created_at', { ascending: false });
 
       // DEBUG : Affiche le user connecté
@@ -183,20 +190,26 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
 
   useEffect(() => {
     if (!user) return;
+    
+    // Récupérer les demandes au montage
+    fetchRideRequests();
 
-    // Écoute en temps réel (optionnel, peut être supprimée si on veut strictement du manuel)
+    // Mettre en place un rafraîchissement toutes les 30 secondes
+    const interval = setInterval(fetchRideRequests, 30000);
+
+    // Mettre en place un écouteur temps réel pour les nouvelles demandes
     const subscription = supabase
-      .channel('ride_requests_driver')
+      .channel('ride_requests')
       .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'rides', filter: 'status=eq.requested' },
-        (payload) => {
-          // Optionnel : notification visuelle
-          // fetchRideRequests();
+        { event: '*', schema: 'public', table: 'rides' },
+        () => {
+          fetchRideRequests();
         }
       )
       .subscribe();
 
     return () => {
+      clearInterval(interval);
       subscription.unsubscribe();
     };
   }, [user, driverLocation]);
