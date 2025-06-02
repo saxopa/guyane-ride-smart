@@ -53,6 +53,7 @@ export const useProfile = () => {
 
     try {
       setLoading(true);
+      console.log('Fetching profile for user:', user.id);
 
       // Fetch user profile
       const { data: profileData, error: profileError } = await supabase
@@ -61,23 +62,61 @@ export const useProfile = () => {
         .eq('id', user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        throw profileError;
+      }
+      
+      console.log('Profile data fetched:', profileData);
       setProfile(profileData);
 
       // If user is a driver, fetch driver profile
       if (profileData?.role === 'driver') {
+        console.log('User is a driver, fetching driver profile...');
         const { data: driverData, error: driverError } = await supabase
           .from('drivers')
           .select('*')
           .eq('id', user.id)
           .single();
 
-        if (!driverError) {
+        if (driverError) {
+          console.error('Error fetching driver profile:', driverError);
+          // If driver profile doesn't exist, create one with default values
+          if (driverError.code === 'PGRST116') {
+            console.log('Driver profile not found, creating default profile...');
+            const { data: newDriverData, error: createError } = await supabase
+              .from('drivers')
+              .insert({
+                id: user.id,
+                license_number: '',
+                vehicle_make: '',
+                vehicle_model: '',
+                vehicle_year: new Date().getFullYear(),
+                vehicle_color: '',
+                vehicle_plate: '',
+                vehicle_type: 'standard',
+                status: 'offline',
+                rating: 5.0,
+                total_rides: 0,
+                is_verified: false
+              })
+              .select()
+              .single();
+
+            if (createError) {
+              console.error('Error creating driver profile:', createError);
+            } else {
+              console.log('Driver profile created:', newDriverData);
+              setDriverProfile(newDriverData);
+            }
+          }
+        } else {
+          console.log('Driver profile fetched:', driverData);
           setDriverProfile(driverData);
         }
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error in fetchProfile:', error);
     } finally {
       setLoading(false);
     }

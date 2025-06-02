@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const DriverDashboard = () => {
   const { user, signOut } = useAuth();
-  const { profile, driverProfile, updateDriverStatus, updateLocation } = useProfile();
+  const { profile, driverProfile, updateDriverStatus, updateLocation, loading } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('rides');
@@ -52,8 +53,8 @@ const DriverDashboard = () => {
   const handleToggleOnline = async () => {
     if (!driverProfile) {
       toast({
-        title: "Erreur",
-        description: "Profil conducteur non configuré",
+        title: "Configuration nécessaire",
+        description: "Votre profil conducteur est en cours de configuration...",
         variant: "destructive"
       });
       return;
@@ -105,7 +106,7 @@ const DriverDashboard = () => {
   };
 
   const handleSignOut = async () => {
-    if (isOnline) {
+    if (isOnline && driverProfile) {
       await updateDriverStatus('offline');
     }
     await signOut();
@@ -127,6 +128,15 @@ const DriverDashboard = () => {
       await updateDriverStatus('busy');
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ocean-50 via-white to-tropical-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-tropical-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ocean-50 via-white to-tropical-50">
@@ -154,6 +164,7 @@ const DriverDashboard = () => {
                 <Switch
                   checked={isOnline}
                   onCheckedChange={handleToggleOnline}
+                  disabled={!driverProfile}
                 />
               </div>
               <Button
@@ -186,7 +197,7 @@ const DriverDashboard = () => {
                   <p className="text-sm text-gray-600">Statut</p>
                   <p className="font-medium">
                     <Badge className={isOnline ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                      {isOnline ? 'Disponible' : 'Hors ligne'}
+                      {driverProfile ? (isOnline ? 'Disponible' : 'Hors ligne') : 'Configuration...'}
                     </Badge>
                   </p>
                 </div>
@@ -223,6 +234,24 @@ const DriverDashboard = () => {
           </Card>
         </div>
 
+        {/* Message si profil en cours de création */}
+        {!driverProfile && (
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <Car className="w-12 h-12 mx-auto mb-4 text-orange-500" />
+                <h3 className="text-lg font-semibold mb-2">Configuration du profil conducteur</h3>
+                <p className="text-gray-600 mb-4">
+                  Votre profil conducteur est en cours de création. Cela peut prendre quelques instants.
+                </p>
+                <Button onClick={() => window.location.reload()}>
+                  Actualiser la page
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="rides">Courses</TabsTrigger>
@@ -241,9 +270,12 @@ const DriverDashboard = () => {
                   <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Aucune demande en attente</p>
                   <p className="text-sm">
-                    {isOnline 
-                      ? "Restez en ligne pour recevoir des demandes" 
-                      : "Passez en ligne pour recevoir des demandes"
+                    {driverProfile 
+                      ? (isOnline 
+                          ? "Restez en ligne pour recevoir des demandes" 
+                          : "Passez en ligne pour recevoir des demandes"
+                        )
+                      : "Configurez votre profil pour recevoir des demandes"
                     }
                   </p>
                 </div>
@@ -321,7 +353,10 @@ const DriverDashboard = () => {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-gray-500">Profil conducteur non configuré</p>
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tropical-600 mx-auto mb-4"></div>
+                    <p className="text-gray-500">Configuration du profil en cours...</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
