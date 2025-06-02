@@ -138,7 +138,7 @@ const DriverDashboard = () => {
   };
 
   // Show loading state
-  if (loading) {
+  if (loading || !profile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ocean-50 via-white to-tropical-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-tropical-600"></div>
@@ -159,7 +159,7 @@ const DriverDashboard = () => {
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Fasterz Conducteur</h1>
                 <p className="text-sm text-gray-600">
-                  {profile?.first_name} {profile?.last_name}
+                  {profile.first_name} {profile.last_name}
                 </p>
               </div>
             </div>
@@ -243,7 +243,7 @@ const DriverDashboard = () => {
         </div>
 
         {/* Message si profil en cours de création */}
-        {driverProfile === null || driverProfile === undefined ? (
+        {(!driverProfile) ? (
           <Card className="mb-6">
             <CardContent className="p-4">
               <div className="text-center">
