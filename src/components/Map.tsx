@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -54,7 +54,7 @@ const LocationPicker = ({ onLocationSelect }: { onLocationSelect?: (lat: number,
 };
 
 const Map: React.FC<MapProps> = ({
-  center = [4.9375, -52.3267], // Cayenne, Guyane française
+  center = [43.6047, 1.4442], // Toulouse par défaut pour les tests
   zoom = 13,
   onLocationSelect,
   pickupLocation,
@@ -70,10 +70,17 @@ const Map: React.FC<MapProps> = ({
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation([position.coords.latitude, position.coords.longitude]);
+          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(coords);
+          console.log('User location detected:', coords);
         },
         (error) => {
           console.log('Géolocalisation non disponible:', error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
         }
       );
     }
@@ -106,6 +113,7 @@ const Map: React.FC<MapProps> = ({
     shadowSize: [41, 41]
   });
 
+  // Utiliser la position de l'utilisateur si disponible, sinon le centre par défaut
   const mapCenter = userLocation || center;
 
   return (
@@ -142,6 +150,15 @@ const Map: React.FC<MapProps> = ({
               </div>
             </Popup>
           </Marker>
+        )}
+        
+        {route && route.length > 0 && (
+          <Polyline 
+            positions={route} 
+            color="blue" 
+            weight={4} 
+            opacity={0.7} 
+          />
         )}
         
         {drivers.map((driver) => (

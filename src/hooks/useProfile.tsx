@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,6 +50,8 @@ export const useProfile = () => {
   }, [user]);
 
   const fetchProfile = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
       console.log('Fetching profile for user:', user.id);
@@ -126,23 +129,35 @@ export const useProfile = () => {
   };
 
   const updateDriverStatus = async (status: 'offline' | 'available' | 'busy') => {
-    if (!user || !driverProfile) return { error: 'No driver profile found' };
+    if (!user || !driverProfile) {
+      console.error('No user or driver profile found for status update');
+      return { error: 'No driver profile found' };
+    }
 
     try {
+      console.log('Updating driver status to:', status);
+      
       const { error } = await supabase
         .from('drivers')
         .update({ status })
         .eq('id', user.id);
 
       if (error) {
+        console.error('Error updating driver status:', error);
         throw error;
       }
 
+      // Mettre à jour l'état local
       setDriverProfile({ ...driverProfile, status });
+      
+      console.log('Driver status updated successfully to:', status);
+      
       toast({
         title: "Statut mis à jour",
-        description: `Votre statut est maintenant ${status}`,
+        description: `Votre statut est maintenant ${status === 'available' ? 'en ligne' : status === 'offline' ? 'hors ligne' : 'occupé'}`,
       });
+
+      return { error: null };
     } catch (error) {
       console.error('Error updating driver status:', error);
       toast({
@@ -150,29 +165,38 @@ export const useProfile = () => {
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
+      return { error };
     }
   };
 
   const updateLocation = async (latitude: number, longitude: number) => {
-    if (!user || !driverProfile) return { error: 'No driver profile found' };
-
-    const { error } = await supabase
-      .from('drivers')
-      .update({ 
-        current_latitude: latitude, 
-        current_longitude: longitude 
-      })
-      .eq('id', user.id);
-
-    if (!error) {
-      setDriverProfile({ 
-        ...driverProfile, 
-        current_latitude: latitude, 
-        current_longitude: longitude 
-      });
+    if (!user || !driverProfile) {
+      console.error('No user or driver profile found for location update');
+      return { error: 'No driver profile found' };
     }
 
-    return { error };
+    try {
+      const { error } = await supabase
+        .from('drivers')
+        .update({ 
+          current_latitude: latitude, 
+          current_longitude: longitude 
+        })
+        .eq('id', user.id);
+
+      if (!error) {
+        setDriverProfile({ 
+          ...driverProfile, 
+          current_latitude: latitude, 
+          current_longitude: longitude 
+        });
+      }
+
+      return { error };
+    } catch (error) {
+      console.error('Error updating location:', error);
+      return { error };
+    }
   };
 
   return {

@@ -273,6 +273,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_driver"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_rider"
+            columns: ["rider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "rides_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
@@ -375,7 +389,7 @@ export type Tables<
   }
     ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -486,31 +500,3 @@ export const Constants = {
     },
   },
 } as const
-
-// Optimisation des policies Supabase
-// Exemple de policy pour éviter les boucles infinies
-CREATE POLICY "drivers_can_view_rider_profiles" ON profiles
-FOR SELECT USING (
-  EXISTS (
-    SELECT 1
-    FROM rides
-    WHERE rides.rider_id = profiles.id
-      AND rides.driver_id = auth.uid()
-  )
-);
-
-CREATE POLICY "riders_can_view_driver_profiles" ON drivers
-FOR SELECT USING (
-  EXISTS (
-    SELECT 1
-    FROM rides
-    WHERE rides.driver_id = drivers.id
-      AND rides.rider_id = auth.uid()
-  )
-);
-
-// Ajout de vérifications pour éviter les conflits
-ALTER TABLE rides
-ADD CONSTRAINT fk_rider FOREIGN KEY (rider_id) REFERENCES profiles(id);
-ALTER TABLE rides
-ADD CONSTRAINT fk_driver FOREIGN KEY (driver_id) REFERENCES drivers(id);
