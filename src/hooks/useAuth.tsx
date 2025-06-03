@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: { user, session }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -77,13 +77,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
         return { error };
-      } else {
-        toast({
-          title: "Connexion réussie",
-          description: "Bienvenue sur Fasterz !",
-        });
-        return { error: null };
       }
+
+      // Fetch user profile to get role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user?.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer votre profil",
+          variant: "destructive",
+        });
+        return { error: profileError };
+      }
+
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur Fasterz !",
+      });
+
+      return { error: null };
     } catch (error) {
       console.error('Error in signIn:', error);
       toast({
@@ -101,7 +119,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
         options: {
-          data: userData,
+          data: {
+            role: userData.role,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+          },
         },
       });
 
@@ -111,14 +133,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: authError.message,
           variant: "destructive",
         });
-        return;
+        return { error: authError };
+      }
+
+      if (!authData.user) {
+        throw new Error('No user data returned from signup');
       }
 
       // Create profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user!.id,
+          id: authData.user.id,
           email: email,
           first_name: userData.first_name,
           last_name: userData.last_name,
@@ -141,7 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { error: driverError } = await supabase
           .from('drivers')
           .insert({
-            id: authData.user!.id,
+            id: authData.user.id,
             license_number: userData.licenseNumber,
             vehicle_make: userData.vehicleMake,
             vehicle_model: userData.vehicleModel,
@@ -170,6 +196,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Inscription réussie",
         description: "Votre compte a été créé avec succès.",
       });
+
+      return { error: null };
     } catch (error) {
       console.error('Error in signUp:', error);
       toast({
@@ -177,26 +205,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Une erreur est survenue lors de l'inscription",
         variant: "destructive",
       });
+      return { error };
     }
   };
 
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        console.error('Error signing out:', error);
-        toast({
-          title: "Erreur de déconnexion",
-          description: "Une erreur est survenue lors de la déconnexion",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Déconnexion réussie",
-          description: "À bientôt sur Fasterz !",
-        });
-      }
+      if (error) throw error;
+      
+      toast({
+        title: "Déconnexion réussie",
+        description: "À bientôt sur Fasterz !",
+      });
     } catch (error) {
       console.error('Error in signOut:', error);
       toast({

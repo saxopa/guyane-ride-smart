@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,102 +55,37 @@ export const useProfile = () => {
       setLoading(true);
       console.log('Fetching profile for user:', user.id);
 
-      // Fetch user profile with improved error handling
+      // Fetch user profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
       if (profileError) {
         console.error('Error fetching profile:', profileError);
-        // If profile doesn't exist, create one
-        if (profileError.code === 'PGRST116' || profileError.message?.includes('no rows returned')) {
-          console.log('Profile not found, creating default profile...');
-          const { data: newProfileData, error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: user.id,
-              email: user.email || '',
-              first_name: user.user_metadata?.first_name || '',
-              last_name: user.user_metadata?.last_name || '',
-              role: 'rider'
-            })
-            .select()
-            .single();
+        throw profileError;
+      }
 
-          if (createError) {
-            console.error('Error creating profile:', createError);
-            toast({
-              title: "Erreur",
-              description: "Impossible de créer le profil utilisateur",
-              variant: "destructive",
-            });
-          } else {
-            console.log('Profile created:', newProfileData);
-            setProfile(newProfileData);
-          }
-        } else {
-          toast({
-            title: "Erreur",
-            description: "Impossible de récupérer le profil utilisateur",
-            variant: "destructive",
-          });
+      console.log('Profile data fetched:', profileData);
+      setProfile(profileData);
+
+      // If user is a driver, fetch driver profile
+      if (profileData.role === 'driver') {
+        console.log('User is a driver, fetching driver profile...');
+        const { data: driverData, error: driverError } = await supabase
+          .from('drivers')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (driverError) {
+          console.error('Error fetching driver profile:', driverError);
+          throw driverError;
         }
-      } else if (profileData) {
-        console.log('Profile data fetched:', profileData);
-        setProfile(profileData);
 
-        // If user is a driver, fetch driver profile
-        if (profileData.role === 'driver') {
-          console.log('User is a driver, fetching driver profile...');
-          const { data: driverData, error: driverError } = await supabase
-            .from('drivers')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
-
-          if (driverError) {
-            console.error('Error fetching driver profile:', driverError);
-            // If driver profile doesn't exist, create one with default values
-            if (driverError.code === 'PGRST116' || driverError.message?.includes('no rows returned')) {
-              console.log('Driver profile not found, creating default profile...');
-              const { data: newDriverData, error: createError } = await supabase
-                .from('drivers')
-                .insert({
-                  id: user.id,
-                  license_number: '',
-                  vehicle_make: '',
-                  vehicle_model: '',
-                  vehicle_year: new Date().getFullYear(),
-                  vehicle_color: '',
-                  vehicle_plate: '',
-                  vehicle_type: 'standard',
-                  status: 'offline',
-                  rating: 5.0,
-                  total_rides: 0,
-                  is_verified: false
-                })
-                .select()
-                .single();
-
-              if (createError) {
-                console.error('Error creating driver profile:', createError);
-                toast({
-                  title: "Erreur",
-                  description: "Impossible de créer le profil conducteur",
-                  variant: "destructive",
-                });
-              } else {
-                console.log('Driver profile created:', newDriverData);
-                setDriverProfile(newDriverData);
-              }
-            }
-          } else if (driverData) {
-            console.log('Driver profile fetched:', driverData);
-            setDriverProfile(driverData);
-          }
-        }
+        console.log('Driver profile fetched:', driverData);
+        setDriverProfile(driverData);
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
