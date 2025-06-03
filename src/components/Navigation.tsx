@@ -81,12 +81,14 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
     );
   }
 
-  // Get user display name
+  // Get user display name with better fallback handling
   const getUserDisplayName = () => {
     if (profile?.first_name && profile?.last_name) {
       return `${profile.first_name} ${profile.last_name}`;
     } else if (profile?.first_name) {
       return profile.first_name;
+    } else if (profile?.email) {
+      return profile.email.split('@')[0];
     } else if (user?.email) {
       return user.email.split('@')[0];
     }

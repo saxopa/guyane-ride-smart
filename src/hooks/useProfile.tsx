@@ -56,7 +56,7 @@ export const useProfile = () => {
       setLoading(true);
       console.log('Fetching profile for user:', user.id);
 
-      // Fetch user profile with better error handling
+      // Fetch user profile with improved error handling
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -66,7 +66,7 @@ export const useProfile = () => {
       if (profileError) {
         console.error('Error fetching profile:', profileError);
         // If profile doesn't exist, create one
-        if (profileError.code === 'PGRST116') {
+        if (profileError.code === 'PGRST116' || profileError.message?.includes('no rows returned')) {
           console.log('Profile not found, creating default profile...');
           const { data: newProfileData, error: createError } = await supabase
             .from('profiles')
@@ -82,13 +82,21 @@ export const useProfile = () => {
 
           if (createError) {
             console.error('Error creating profile:', createError);
-            throw createError;
+            toast({
+              title: "Erreur",
+              description: "Impossible de créer le profil utilisateur",
+              variant: "destructive",
+            });
           } else {
             console.log('Profile created:', newProfileData);
             setProfile(newProfileData);
           }
         } else {
-          throw profileError;
+          toast({
+            title: "Erreur",
+            description: "Impossible de récupérer le profil utilisateur",
+            variant: "destructive",
+          });
         }
       } else if (profileData) {
         console.log('Profile data fetched:', profileData);
@@ -106,7 +114,7 @@ export const useProfile = () => {
           if (driverError) {
             console.error('Error fetching driver profile:', driverError);
             // If driver profile doesn't exist, create one with default values
-            if (driverError.code === 'PGRST116') {
+            if (driverError.code === 'PGRST116' || driverError.message?.includes('no rows returned')) {
               console.log('Driver profile not found, creating default profile...');
               const { data: newDriverData, error: createError } = await supabase
                 .from('drivers')
@@ -129,6 +137,11 @@ export const useProfile = () => {
 
               if (createError) {
                 console.error('Error creating driver profile:', createError);
+                toast({
+                  title: "Erreur",
+                  description: "Impossible de créer le profil conducteur",
+                  variant: "destructive",
+                });
               } else {
                 console.log('Driver profile created:', newDriverData);
                 setDriverProfile(newDriverData);
@@ -144,7 +157,7 @@ export const useProfile = () => {
       console.error('Error in fetchProfile:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de récupérer le profil utilisateur",
+        description: "Une erreur est survenue lors du chargement du profil",
         variant: "destructive",
       });
     } finally {
@@ -171,7 +184,7 @@ export const useProfile = () => {
         throw error;
       }
 
-      // Mettre à jour l'état local
+      // Update local state
       setDriverProfile({ ...driverProfile, status });
       
       console.log('Driver status updated successfully to:', status);
