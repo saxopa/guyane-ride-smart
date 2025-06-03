@@ -12,9 +12,11 @@ interface NavigationProps {
 
 const Navigation = ({ onAuthClick }: NavigationProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, signOut, loading } = useAuth();
-  const { profile } = useProfile();
+  const { user, signOut, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
+
+  const loading = authLoading || profileLoading;
 
   const handleAuthClick = (type: 'rider' | 'driver') => {
     try {
@@ -79,6 +81,25 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
     );
   }
 
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    } else if (profile?.first_name) {
+      return profile.first_name;
+    } else if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'Utilisateur';
+  };
+
+  // Get user role display
+  const getUserRoleDisplay = () => {
+    if (profile?.role === 'driver') return 'Conducteur';
+    if (profile?.role === 'admin') return 'Administrateur';
+    return 'Passager';
+  };
+
   return (
     <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -106,9 +127,14 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
             
             {user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  Bonjour, {profile?.first_name || 'Utilisateur'}
-                </span>
+                <div className="text-sm">
+                  <div className="font-medium text-gray-900">
+                    Bonjour, {getUserDisplayName()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {getUserRoleDisplay()}
+                  </div>
+                </div>
                 <Button 
                   variant="outline" 
                   onClick={handleDashboardNavigation}
@@ -172,6 +198,14 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
               
               {user ? (
                 <>
+                  <div className="text-sm border-b border-gray-200 pb-2">
+                    <div className="font-medium text-gray-900">
+                      Bonjour, {getUserDisplayName()}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {getUserRoleDisplay()}
+                    </div>
+                  </div>
                   <Button 
                     variant="outline" 
                     onClick={handleDashboardNavigation}
