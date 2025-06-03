@@ -20,6 +20,75 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Sous-composant : StatCard
+const StatCard = ({ title, value, icon: Icon, color, change }: any) => (
+  <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300" aria-label={title}>
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className={`text-xs ${
+            change.includes('+') ? 'text-green-600' : 
+            change.includes('-') ? 'text-red-600' : 'text-gray-600'
+          }`}>
+            {change} vs hier
+          </p>
+        </div>
+        <div className={`p-3 rounded-lg ${
+          color === 'tropical' ? 'bg-tropical-100 text-tropical-600' :
+          color === 'ocean' ? 'bg-ocean-100 text-ocean-600' :
+          color === 'sunset' ? 'bg-sunset-100 text-sunset-600' :
+          color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
+          'bg-red-100 text-red-600'
+        }`}>
+          <Icon className="w-6 h-6" aria-hidden="true" />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// Sous-composant : ActivityItem
+const ActivityItem = ({ activity }: any) => (
+  <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg" aria-label={activity.description}>
+    <div className={`w-3 h-3 rounded-full ${
+      activity.status === 'success' ? 'bg-green-500' :
+      activity.status === 'warning' ? 'bg-yellow-500' :
+      activity.status === 'info' ? 'bg-blue-500' : 'bg-gray-500'
+    }`} aria-hidden="true"></div>
+    <div className="flex-1">
+      <p className="text-sm font-medium text-gray-900">{activity.description}</p>
+      <p className="text-xs text-gray-500">{activity.time}</p>
+    </div>
+  </div>
+);
+
+// Sous-composant : TopDriverItem
+const TopDriverItem = ({ driver, index }: any) => (
+  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg" aria-label={`Top conducteur ${driver.name}`}> 
+    <div className="flex items-center space-x-3">
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+        index === 0 ? 'bg-yellow-500' :
+        index === 1 ? 'bg-gray-400' :
+        index === 2 ? 'bg-orange-500' : 'bg-gray-300'
+      }`} aria-label={`Rang ${index + 1}`}>{index + 1}</div>
+      <div>
+        <p className="font-medium text-gray-900">{driver.name}</p>
+        <div className="flex items-center space-x-2 text-xs text-gray-600">
+          <span>{driver.rides} courses</span>
+          <span>•</span>
+          <span className="flex items-center">
+            <Star className="w-3 h-3 text-yellow-400 fill-current mr-1" aria-hidden="true" />
+            {driver.rating}
+          </span>
+        </div>
+      </div>
+    </div>
+    <p className="font-semibold text-gray-900">{driver.earnings}</p>
+  </div>
+);
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
@@ -72,82 +141,20 @@ const AdminDashboard = () => {
           </div>
         </div>
       </header>
-
       <div className="container mx-auto px-4 py-8">
         {/* Statistiques principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           {[
-            { 
-              title: 'Utilisateurs totaux', 
-              value: stats.totalUsers.toLocaleString(), 
-              icon: Users, 
-              color: 'tropical',
-              change: '+12%' 
-            },
-            { 
-              title: 'Conducteurs actifs', 
-              value: stats.activeDrivers, 
-              icon: Car, 
-              color: 'ocean',
-              change: '+8%' 
-            },
-            { 
-              title: 'Courses aujourd\'hui', 
-              value: stats.dailyRides.toLocaleString(), 
-              icon: MapPin, 
-              color: 'sunset',
-              change: '+15%' 
-            },
-            { 
-              title: 'Revenus du jour', 
-              value: `${stats.revenue.toLocaleString()}€`, 
-              icon: Euro, 
-              color: 'tropical',
-              change: '+22%' 
-            },
-            { 
-              title: 'Note moyenne', 
-              value: stats.avgRating, 
-              icon: Star, 
-              color: 'yellow',
-              change: '+0.1' 
-            },
-            { 
-              title: 'Incidents', 
-              value: stats.incidents, 
-              icon: AlertTriangle, 
-              color: 'red',
-              change: '-2' 
-            }
+            { title: 'Utilisateurs totaux', value: stats.totalUsers.toLocaleString(), icon: Users, color: 'tropical', change: '+12%' },
+            { title: 'Conducteurs actifs', value: stats.activeDrivers, icon: Car, color: 'ocean', change: '+8%' },
+            { title: 'Courses aujourd\'hui', value: stats.dailyRides.toLocaleString(), icon: MapPin, color: 'sunset', change: '+15%' },
+            { title: 'Revenus du jour', value: `${stats.revenue.toLocaleString()}€`, icon: Euro, color: 'tropical', change: '+22%' },
+            { title: 'Note moyenne', value: stats.avgRating, icon: Star, color: 'yellow', change: '+0.1' },
+            { title: 'Incidents', value: stats.incidents, icon: AlertTriangle, color: 'red', change: '-2' }
           ].map((stat, index) => (
-            <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    <p className={`text-xs ${
-                      stat.change.includes('+') ? 'text-green-600' : 
-                      stat.change.includes('-') ? 'text-red-600' : 'text-gray-600'
-                    }`}>
-                      {stat.change} vs hier
-                    </p>
-                  </div>
-                  <div className={`p-3 rounded-lg ${
-                    stat.color === 'tropical' ? 'bg-tropical-100 text-tropical-600' :
-                    stat.color === 'ocean' ? 'bg-ocean-100 text-ocean-600' :
-                    stat.color === 'sunset' ? 'bg-sunset-100 text-sunset-600' :
-                    stat.color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
-                    'bg-red-100 text-red-600'
-                  }`}>
-                    <stat.icon className="w-6 h-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <StatCard key={index} {...stat} />
           ))}
         </div>
-
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
@@ -156,14 +163,13 @@ const AdminDashboard = () => {
             <TabsTrigger value="rides">Courses</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
-
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Activité récente */}
               <Card className="lg:col-span-2 border-none shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Clock className="w-5 h-5 mr-2" />
+                    <Clock className="w-5 h-5 mr-2" aria-hidden="true" />
                     Activité récente
                   </CardTitle>
                   <CardDescription>
@@ -172,26 +178,15 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                      <div className={`w-3 h-3 rounded-full ${
-                        activity.status === 'success' ? 'bg-green-500' :
-                        activity.status === 'warning' ? 'bg-yellow-500' :
-                        activity.status === 'info' ? 'bg-blue-500' : 'bg-gray-500'
-                      }`}></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">{activity.description}</p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                      </div>
-                    </div>
+                    <ActivityItem key={activity.id} activity={activity} />
                   ))}
                 </CardContent>
               </Card>
-
               {/* Top conducteurs */}
               <Card className="border-none shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2" />
+                    <TrendingUp className="w-5 h-5 mr-2" aria-hidden="true" />
                     Top conducteurs
                   </CardTitle>
                   <CardDescription>
@@ -200,52 +195,27 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {topDrivers.map((driver, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                          index === 0 ? 'bg-yellow-500' :
-                          index === 1 ? 'bg-gray-400' :
-                          index === 2 ? 'bg-orange-500' : 'bg-gray-300'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{driver.name}</p>
-                          <div className="flex items-center space-x-2 text-xs text-gray-600">
-                            <span>{driver.rides} courses</span>
-                            <span>•</span>
-                            <span className="flex items-center">
-                              <Star className="w-3 h-3 text-yellow-400 fill-current mr-1" />
-                              {driver.rating}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="font-semibold text-gray-900">{driver.earnings}</p>
-                    </div>
+                    <TopDriverItem key={index} driver={driver} index={index} />
                   ))}
                 </CardContent>
               </Card>
             </div>
-
             {/* Graphique de revenus simulé */}
             <Card className="border-none shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <BarChart3 className="w-5 h-5 mr-2" />
+                  <BarChart3 className="w-5 h-5 mr-2" aria-hidden="true" />
                   Revenus des 7 derniers jours
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 bg-gradient-to-r from-tropical-100 to-ocean-100 rounded-lg flex items-end justify-around p-6">
+                <div className="h-64 bg-gradient-to-r from-tropical-100 to-ocean-100 rounded-lg flex items-end justify-around p-6" aria-label="Graphique des revenus hebdomadaires">
                   {[12400, 15200, 13800, 16900, 14300, 18500, 15420].map((value, index) => (
                     <div key={index} className="flex flex-col items-center">
                       <div 
                         className="bg-gradient-to-t from-tropical-500 to-ocean-500 rounded-t-md mb-2"
-                        style={{ 
-                          height: `${(value / 20000) * 200}px`,
-                          width: '40px'
-                        }}
+                        style={{ height: `${(value / 20000) * 200}px`, width: '40px' }}
+                        aria-label={`Barre ${['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][index]}`}
                       ></div>
                       <p className="text-xs text-gray-600">{value}€</p>
                       <p className="text-xs text-gray-500">
@@ -257,7 +227,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="users" className="space-y-6">
             <Card className="border-none shadow-lg">
               <CardHeader>
@@ -275,7 +244,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="drivers" className="space-y-6">
             <Card className="border-none shadow-lg">
               <CardHeader>
@@ -293,7 +261,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="rides" className="space-y-6">
             <Card className="border-none shadow-lg">
               <CardHeader>
@@ -311,7 +278,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           <TabsContent value="analytics" className="space-y-6">
             <Card className="border-none shadow-lg">
               <CardHeader>

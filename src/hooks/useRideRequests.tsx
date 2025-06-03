@@ -35,24 +35,21 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
       const { data: rides, error } = await supabase
         .from('rides')
         .select('*')
-        .eq('status', 'requested')
         .is('driver_id', null)
         .order('created_at', { ascending: false });
-      if (error) throw error;
-      let filteredRides = rides || [];
-      if (driverLocation && driverLocation.lat && driverLocation.lng) {
-        const R = 6371;
-        filteredRides = filteredRides.filter(ride => {
-          const dLat = (ride.pickup_latitude - driverLocation.lat) * Math.PI / 180;
-          const dLon = (ride.pickup_longitude - driverLocation.lng) * Math.PI / 180;
-          const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(driverLocation.lat * Math.PI / 180) * Math.cos(ride.pickup_latitude * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          return R * c <= 15;
-        });
+
+      if (error) {
+        throw error;
       }
-      setRequests(filteredRides);
+
+      setRequests(rides || []);
     } catch (error) {
-      toast({ title: 'Erreur', description: "Impossible de charger les demandes de course", variant: 'destructive' });
+      console.error('Error fetching ride requests:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les demandes de course",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -89,12 +86,24 @@ export const useRideRequests = (driverLocation?: { lat: number; lng: number }) =
         .update({ driver_id: user.id, status: 'accepted' })
         .eq('id', rideId)
         .eq('status', 'requested');
-      if (error) throw error;
-      toast({ title: 'Course acceptée', description: 'Vous avez accepté la course avec succès' });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Course acceptée",
+        description: "Vous avez accepté la course avec succès",
+      });
       await fetchAcceptedRide();
       await fetchRideRequests();
     } catch (error) {
-      toast({ title: 'Erreur', description: "Impossible d'accepter la course", variant: 'destructive' });
+      console.error('Error accepting ride:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accepter la course",
+        variant: "destructive",
+      });
     } finally {
       setAcceptingRide(null);
     }

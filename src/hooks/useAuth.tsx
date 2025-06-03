@@ -82,8 +82,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: "Bienvenue sur Fasterz !",
         });
       }
-
-      return { error };
     } catch (error) {
       console.error('Error in signIn:', error);
       toast({
@@ -91,19 +89,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Une erreur est survenue lors de la connexion",
         variant: "destructive",
       });
-      return { error };
     }
   };
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: userData,
         },
       });
@@ -114,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: authError.message,
           variant: "destructive",
         });
-        return { error: authError };
+        return;
       }
 
       // Create profile
@@ -173,8 +167,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Inscription réussie",
         description: "Votre compte a été créé avec succès.",
       });
-
-      return { error: null };
     } catch (error) {
       console.error('Error in signUp:', error);
       toast({
@@ -182,29 +174,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Une erreur est survenue lors de l'inscription",
         variant: "destructive",
       });
-      return { error };
     }
   };
 
   const signOut = async () => {
     try {
-      if (!session) {
-        console.log('No session to sign out from');
-        return;
-      }
-
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         console.error('Error signing out:', error);
+        toast({
+          title: "Erreur de déconnexion",
+          description: "Une erreur est survenue lors de la déconnexion",
+          variant: "destructive",
+        });
       } else {
         toast({
-          title: "Déconnexion",
+          title: "Déconnexion réussie",
           description: "À bientôt sur Fasterz !",
         });
       }
     } catch (error) {
       console.error('Error in signOut:', error);
+      toast({
+        title: "Erreur de déconnexion",
+        description: "Une erreur est survenue lors de la déconnexion",
+        variant: "destructive",
+      });
     }
   };
 

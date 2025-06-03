@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui/use-toast';
 
 interface Profile {
   id: string;
@@ -49,8 +49,6 @@ export const useProfile = () => {
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) return;
-
     try {
       setLoading(true);
       console.log('Fetching profile for user:', user.id);
@@ -117,6 +115,11 @@ export const useProfile = () => {
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer le profil utilisateur",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -125,16 +128,29 @@ export const useProfile = () => {
   const updateDriverStatus = async (status: 'offline' | 'available' | 'busy') => {
     if (!user || !driverProfile) return { error: 'No driver profile found' };
 
-    const { error } = await supabase
-      .from('drivers')
-      .update({ status })
-      .eq('id', user.id);
+    try {
+      const { error } = await supabase
+        .from('drivers')
+        .update({ status })
+        .eq('id', user.id);
 
-    if (!error) {
+      if (error) {
+        throw error;
+      }
+
       setDriverProfile({ ...driverProfile, status });
+      toast({
+        title: "Statut mis à jour",
+        description: `Votre statut est maintenant ${status}`,
+      });
+    } catch (error) {
+      console.error('Error updating driver status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
     }
-
-    return { error };
   };
 
   const updateLocation = async (latitude: number, longitude: number) => {
