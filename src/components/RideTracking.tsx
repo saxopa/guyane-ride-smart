@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,7 +56,7 @@ const RideTracking: React.FC<RideTrackingProps> = ({ mode = 'rider', ride }) => 
         .from('rides')
         .select(`
           *,
-          driver:drivers(
+          drivers!rides_driver_id_fkey(
             vehicle_make,
             vehicle_model,
             vehicle_plate,
@@ -77,14 +78,14 @@ const RideTracking: React.FC<RideTrackingProps> = ({ mode = 'rider', ride }) => 
         // Restructurer les données pour correspondre à l'interface Driver
         const rideData = {
           ...data,
-          driver: data.driver ? {
-            first_name: data.driver.profiles?.first_name || '',
-            last_name: data.driver.profiles?.last_name || '',
-            phone: data.driver.profiles?.phone || '',
-            vehicle_make: data.driver.vehicle_make || '',
-            vehicle_model: data.driver.vehicle_model || '',
-            vehicle_plate: data.driver.vehicle_plate || '',
-            rating: data.driver.rating || 5
+          driver: data.drivers ? {
+            first_name: data.drivers.profiles?.first_name || '',
+            last_name: data.drivers.profiles?.last_name || '',
+            phone: data.drivers.profiles?.phone || '',
+            vehicle_make: data.drivers.vehicle_make || '',
+            vehicle_model: data.drivers.vehicle_model || '',
+            vehicle_plate: data.drivers.vehicle_plate || '',
+            rating: data.drivers.rating || 5
           } : undefined
         };
         setCurrentRide(rideData);

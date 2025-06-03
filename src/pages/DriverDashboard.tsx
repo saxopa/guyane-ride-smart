@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Map from '@/components/Map';
 import ChatSystem from '@/components/ChatSystem';
 import RideRequestCard from '@/components/RideRequestCard';
+import RideTracking from '@/components/RideTracking';
 import { useToast } from '@/hooks/use-toast';
 
 const DriverDashboard = () => {

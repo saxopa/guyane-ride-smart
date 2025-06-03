@@ -76,11 +76,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: error.message,
           variant: "destructive",
         });
+        return { error };
       } else {
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Fasterz !",
         });
+        return { error: null };
       }
     } catch (error) {
       console.error('Error in signIn:', error);
@@ -89,6 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Une erreur est survenue lors de la connexion",
         variant: "destructive",
       });
+      return { error };
     }
   };
 
