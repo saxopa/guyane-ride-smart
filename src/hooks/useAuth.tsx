@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,6 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  updateProfile: (data: any) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,7 +65,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data: { user, session }, error } = await supabase.auth.signInWithPassword({
+      setLoading(true);
+      console.log('Attempting sign in for:', email);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -80,25 +83,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      // Fetch user profile to get role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user?.id)
-        .single();
-
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de récupérer votre profil",
-          variant: "destructive",
-        });
-        return { error: profileError };
-      }
-
-      console.log('User signed in successfully:', { user, profile });
-
+      console.log('Sign in successful:', data);
+      
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur Fasterz !",
@@ -113,11 +99,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         variant: "destructive",
       });
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
+      setLoading(true);
       console.log('Starting signup process with data:', { email, userData });
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -148,33 +137,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('User created successfully:', authData.user);
 
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: email,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          phone: userData.phone,
-          role: userData.role,
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        toast({
-          title: "Erreur de création du profil",
-          description: profileError.message,
-          variant: "destructive",
-        });
-        return { error: profileError };
-      }
-
-      console.log('Profile created successfully');
-
-      // If user is a driver, create driver profile
+      // Le profil est créé automatiquement par le trigger
+      // Si l'utilisateur est un conducteur, créer le profil conducteur
       if (userData.role === 'driver') {
-        console.log('Creating driver profile with data:', userData);
+        console.log('Creating driver profile...');
         
         const { error: driverError } = await supabase
           .from('drivers')
@@ -220,11 +186,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         variant: "destructive",
       });
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
@@ -239,41 +208,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Une erreur est survenue lors de la déconnexion",
         variant: "destructive",
       });
-    }
-  };
-
-  const updateProfile = async (data: any) => {
-    if (!user) return { error: 'No user logged in' };
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(data)
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Error updating profile:', error);
-        toast({
-          title: "Erreur de mise à jour",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Profil mis à jour",
-          description: "Vos informations ont été sauvegardées.",
-        });
-      }
-
-      return { error };
-    } catch (error) {
-      console.error('Error in updateProfile:', error);
-      toast({
-        title: "Erreur de mise à jour",
-        description: "Une erreur est survenue lors de la mise à jour",
-        variant: "destructive",
-      });
-      return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -285,7 +221,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signUp,
       signOut,
-      updateProfile,
     }}>
       {children}
     </AuthContext.Provider>

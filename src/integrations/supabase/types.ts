@@ -163,10 +163,10 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
-          email: string | null
-          first_name: string | null
+          email: string
+          first_name: string
           id: string
-          last_name: string | null
+          last_name: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
@@ -174,10 +174,10 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
-          email?: string | null
-          first_name?: string | null
+          email: string
+          first_name: string
           id: string
-          last_name?: string | null
+          last_name: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
@@ -185,10 +185,10 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
-          email?: string | null
-          first_name?: string | null
+          email?: string
+          first_name?: string
           id?: string
-          last_name?: string | null
+          last_name?: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
@@ -273,20 +273,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_driver"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_rider"
-            columns: ["rider_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "rides_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
@@ -358,10 +344,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_current_user_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       driver_status: "offline" | "available" | "busy"

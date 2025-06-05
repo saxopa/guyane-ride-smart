@@ -52,36 +52,11 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
       navigate('/');
     } catch (error) {
       console.error('Error in handleSignOut:', error);
-      // Navigate anyway on error
       navigate('/');
     }
   };
 
-  // Don't render user-specific UI while loading
-  if (loading) {
-    return (
-      <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
-              <div className="w-10 h-10 bg-tropical-gradient rounded-lg flex items-center justify-center">
-                <Car className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">Fasterz</span>
-              <span className="text-sm bg-tropical-100 text-tropical-800 px-2 py-1 rounded-full">Guyane</span>
-            </div>
-            
-            <div className="hidden md:flex items-center space-x-8">
-              <div className="animate-pulse bg-gray-200 h-4 w-20 rounded"></div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
-  }
-
-  // Get user display name with better fallback handling
+  // Obtenir le nom d'affichage de l'utilisateur
   const getUserDisplayName = () => {
     if (profile?.first_name && profile?.last_name) {
       return `${profile.first_name} ${profile.last_name}`;
@@ -95,7 +70,7 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
     return 'Utilisateur';
   };
 
-  // Get user role display
+  // Obtenir l'affichage du rôle utilisateur
   const getUserRoleDisplay = () => {
     if (profile?.role === 'driver') return 'Conducteur';
     if (profile?.role === 'admin') return 'Administrateur';
@@ -127,7 +102,9 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
               Contact
             </a>
             
-            {user ? (
+            {loading ? (
+              <div className="animate-pulse bg-gray-200 h-4 w-20 rounded"></div>
+            ) : user && profile ? (
               <div className="flex items-center space-x-4">
                 <div className="text-sm">
                   <div className="font-medium text-gray-900">
@@ -198,7 +175,9 @@ const Navigation = ({ onAuthClick }: NavigationProps) => {
                 Contact
               </a>
               
-              {user ? (
+              {loading ? (
+                <div className="animate-pulse bg-gray-200 h-4 w-20 rounded"></div>
+              ) : user && profile ? (
                 <>
                   <div className="text-sm border-b border-gray-200 pb-2">
                     <div className="font-medium text-gray-900">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,30 +7,30 @@ import { toast } from '@/components/ui/use-toast';
 interface Profile {
   id: string;
   email: string;
-  phone: string;
+  phone: string | null;
   first_name: string;
   last_name: string;
   role: 'rider' | 'driver' | 'admin';
-  avatar_url: string;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }
 
 interface DriverProfile {
   id: string;
-  license_number: string;
-  vehicle_make: string;
-  vehicle_model: string;
-  vehicle_year: number;
-  vehicle_color: string;
-  vehicle_plate: string;
+  license_number: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: number | null;
+  vehicle_color: string | null;
+  vehicle_plate: string | null;
   vehicle_type: 'standard' | 'familiale' | 'luxe';
   status: 'offline' | 'available' | 'busy';
-  current_latitude: number;
-  current_longitude: number;
-  rating: number;
-  total_rides: number;
-  is_verified: boolean;
+  current_latitude: number | null;
+  current_longitude: number | null;
+  rating: number | null;
+  total_rides: number | null;
+  is_verified: boolean | null;
 }
 
 export const useProfile = () => {
@@ -55,7 +56,7 @@ export const useProfile = () => {
       setLoading(true);
       console.log('Fetching profile for user:', user.id);
 
-      // Fetch user profile
+      // Récupérer le profil utilisateur
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -70,7 +71,7 @@ export const useProfile = () => {
       console.log('Profile data fetched:', profileData);
       setProfile(profileData);
 
-      // If user is a driver, fetch driver profile
+      // Si l'utilisateur est un conducteur, récupérer le profil conducteur
       if (profileData.role === 'driver') {
         console.log('User is a driver, fetching driver profile...');
         const { data: driverData, error: driverError } = await supabase
@@ -81,11 +82,14 @@ export const useProfile = () => {
 
         if (driverError) {
           console.error('Error fetching driver profile:', driverError);
-          throw driverError;
+          // Ne pas bloquer si le profil conducteur n'existe pas encore
+          if (driverError.code !== 'PGRST116') {
+            throw driverError;
+          }
+        } else {
+          console.log('Driver profile fetched:', driverData);
+          setDriverProfile(driverData);
         }
-
-        console.log('Driver profile fetched:', driverData);
-        setDriverProfile(driverData);
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error);
@@ -118,7 +122,7 @@ export const useProfile = () => {
         throw error;
       }
 
-      // Update local state
+      // Mettre à jour l'état local
       setDriverProfile({ ...driverProfile, status });
       
       console.log('Driver status updated successfully to:', status);

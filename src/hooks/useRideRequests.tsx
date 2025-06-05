@@ -12,16 +12,16 @@ interface RideRequest {
   pickup_longitude: number;
   destination_latitude: number;
   destination_longitude: number;
-  estimated_price: number;
-  estimated_duration: number;
-  distance: number;
+  estimated_price: number | null;
+  estimated_duration: number | null;
+  distance: number | null;
   vehicle_type: string;
-  rider_comment?: string;
+  rider_comment: string | null;
   created_at: string;
   rider_id: string;
 }
 
-export const useRideRequests = (driverLocation?: { lat: number; lng: number }) => {
+export const useRideRequests = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [requests, setRequests] = useState<RideRequest[]>([]);
