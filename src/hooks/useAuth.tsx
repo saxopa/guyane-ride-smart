@@ -109,6 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       console.log('Starting signup process with data:', { email, userData });
 
+      // Créer l'utilisateur avec Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -132,44 +133,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (!authData.user) {
-        throw new Error('No user data returned from signup');
+        console.error('No user data returned from signup');
+        toast({
+          title: "Erreur d'inscription",
+          description: "Aucune donnée utilisateur retournée",
+          variant: "destructive",
+        });
+        return { error: new Error('No user data returned') };
       }
 
       console.log('User created successfully:', authData.user);
 
-      // Le profil est créé automatiquement par le trigger
+      // Attendre un peu pour que le trigger crée le profil
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Si l'utilisateur est un conducteur, créer le profil conducteur
       if (userData.role === 'driver') {
         console.log('Creating driver profile...');
         
-        const { error: driverError } = await supabase
-          .from('drivers')
-          .insert({
-            id: authData.user.id,
-            license_number: userData.licenseNumber,
-            vehicle_make: userData.vehicleMake,
-            vehicle_model: userData.vehicleModel,
-            vehicle_year: parseInt(userData.vehicleYear),
-            vehicle_color: userData.vehicleColor,
-            vehicle_plate: userData.vehiclePlate,
-            vehicle_type: userData.vehicleType || 'standard',
-            status: 'offline',
-            rating: 5,
-            total_rides: 0,
-            is_verified: false
-          });
+        try {
+          const { error: driverError } = await supabase
+            .from('drivers')
+            .insert({
+              id: authData.user.id,
+              license_number: userData.licenseNumber || null,
+              vehicle_make: userData.vehicleMake || null,
+              vehicle_model: userData.vehicleModel || null,
+              vehicle_year: userData.vehicleYear ? parseInt(userData.vehicleYear) : null,
+              vehicle_color: userData.vehicleColor || null,
+              vehicle_plate: userData.vehiclePlate || null,
+              vehicle_type: userData.vehicleType || 'standard',
+              status: 'offline',
+              rating: 5.0,
+              total_rides: 0,
+              is_verified: false
+            });
 
-        if (driverError) {
-          console.error('Error creating driver profile:', driverError);
-          toast({
-            title: "Erreur de création du profil conducteur",
-            description: driverError.message,
-            variant: "destructive",
-          });
-          return { error: driverError };
+          if (driverError) {
+            console.error('Error creating driver profile:', driverError);
+            // Ne pas bloquer l'inscription si la création du profil conducteur échoue
+            toast({
+              title: "Profil créé avec avertissement",
+              description: "Votre compte a été créé mais le profil conducteur doit être complété.",
+              variant: "default",
+            });
+          } else {
+            console.log('Driver profile created successfully');
+          }
+        } catch (driverProfileError) {
+          console.error('Exception creating driver profile:', driverProfileError);
+          // Ne pas bloquer l'inscription
         }
-
-        console.log('Driver profile created successfully');
       }
 
       toast({
