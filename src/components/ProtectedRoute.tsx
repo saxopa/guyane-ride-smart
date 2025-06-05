@@ -21,10 +21,16 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       return;
     }
 
-    if (!authLoading && !profileLoading && user) {
-      if (requiredRole && profile?.role !== requiredRole) {
-        console.log(`User role ${profile?.role} does not match required role ${requiredRole}, redirecting`);
-        switch (profile?.role) {
+    if (!authLoading && !profileLoading && user && profile) {
+      console.log('Checking role access:', { 
+        requiredRole, 
+        userRole: profile.role,
+        path: window.location.pathname 
+      });
+
+      if (requiredRole && profile.role !== requiredRole) {
+        console.log(`User role ${profile.role} does not match required role ${requiredRole}, redirecting`);
+        switch (profile.role) {
           case 'driver':
             navigate('/driver');
             break;

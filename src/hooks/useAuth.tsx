@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
+        console.error('Sign in error:', error);
         toast({
           title: "Erreur de connexion",
           description: error.message,
@@ -96,6 +97,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: profileError };
       }
 
+      console.log('User signed in successfully:', { user, profile });
+
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur Fasterz !",
@@ -115,6 +118,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
+      console.log('Starting signup process with data:', { email, userData });
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -128,6 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (authError) {
+        console.error('Auth error during signup:', authError);
         toast({
           title: "Erreur d'inscription",
           description: authError.message,
@@ -139,6 +145,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!authData.user) {
         throw new Error('No user data returned from signup');
       }
+
+      console.log('User created successfully:', authData.user);
 
       // Create profile
       const { error: profileError } = await supabase
@@ -162,8 +170,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: profileError };
       }
 
+      console.log('Profile created successfully');
+
       // If user is a driver, create driver profile
       if (userData.role === 'driver') {
+        console.log('Creating driver profile with data:', userData);
+        
         const { error: driverError } = await supabase
           .from('drivers')
           .insert({
@@ -190,6 +202,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
           return { error: driverError };
         }
+
+        console.log('Driver profile created successfully');
       }
 
       toast({
@@ -238,6 +252,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('id', user.id);
 
       if (error) {
+        console.error('Error updating profile:', error);
         toast({
           title: "Erreur de mise à jour",
           description: error.message,
