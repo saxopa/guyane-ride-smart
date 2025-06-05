@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,7 @@ const DriverDashboard = () => {
   const [earnings, setEarnings] = useState({ today: 0, week: 0, month: 0 });
 
   // Récupérer les demandes de course à afficher au conducteur
-  const { requests, loading: requestsLoading, acceptRide, declineRide, refetch, acceptedRide, refetchAccepted } = useRideRequests(driverProfile && driverProfile.current_latitude && driverProfile.current_longitude ? { lat: driverProfile.current_latitude, lng: driverProfile.current_longitude } : undefined);
+  const { requests, loading: requestsLoading, acceptRide, declineRide, refetch, acceptedRide, refetchAccepted } = useRideRequests();
 
   // Courses en cours du conducteur
   const [currentRides, setCurrentRides] = useState([]);
