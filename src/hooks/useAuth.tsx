@@ -145,12 +145,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('User created successfully:', authData.user);
 
-      // Wait for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait a bit for the profile to be created by the trigger
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // If user is a driver, create driver profile
+      // If user is a driver, create driver profile after authentication
       if (userData.role === 'driver') {
-        console.log('Creating driver profile...');
+        console.log('Creating driver profile for user:', authData.user.id);
+        
+        // Verify user session is established
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          console.log('No session found, waiting for authentication...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
         
         try {
           const { error: driverError } = await supabase
@@ -174,21 +181,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Error creating driver profile:', driverError);
             toast({
               title: "Profil créé avec avertissement",
-              description: "Votre compte a été créé mais le profil conducteur doit être complété.",
+              description: "Votre compte a été créé mais le profil conducteur doit être complété dans les paramètres.",
               variant: "default",
             });
           } else {
             console.log('Driver profile created successfully');
+            toast({
+              title: "Inscription réussie",
+              description: "Votre compte conducteur a été créé avec succès !",
+            });
           }
         } catch (driverProfileError) {
           console.error('Exception creating driver profile:', driverProfileError);
+          toast({
+            title: "Profil créé avec avertissement",
+            description: "Votre compte a été créé mais le profil conducteur doit être complété dans les paramètres.",
+            variant: "default",
+          });
         }
+      } else {
+        toast({
+          title: "Inscription réussie",
+          description: "Votre compte a été créé avec succès !",
+        });
       }
-
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès.",
-      });
 
       return { error: null };
     } catch (error) {
