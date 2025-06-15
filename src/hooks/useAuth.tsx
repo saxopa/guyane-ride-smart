@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
+    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -109,7 +111,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(true);
       console.log('Starting signup process with data:', { email, userData });
 
-      // Créer l'utilisateur avec Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -144,10 +145,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('User created successfully:', authData.user);
 
-      // Attendre un peu pour que le trigger crée le profil
+      // Wait for the trigger to create the profile
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Si l'utilisateur est un conducteur, créer le profil conducteur
+      // If user is a driver, create driver profile
       if (userData.role === 'driver') {
         console.log('Creating driver profile...');
         
@@ -171,7 +172,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           if (driverError) {
             console.error('Error creating driver profile:', driverError);
-            // Ne pas bloquer l'inscription si la création du profil conducteur échoue
             toast({
               title: "Profil créé avec avertissement",
               description: "Votre compte a été créé mais le profil conducteur doit être complété.",
@@ -182,7 +182,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } catch (driverProfileError) {
           console.error('Exception creating driver profile:', driverProfileError);
-          // Ne pas bloquer l'inscription
         }
       }
 

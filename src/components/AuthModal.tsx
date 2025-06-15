@@ -65,7 +65,7 @@ const AuthModal = ({ isOpen, onClose, type }: AuthModalProps) => {
 
       onClose();
       
-      // Redirection selon le type d'utilisateur
+      // Redirect based on user type
       if (type === 'rider') {
         navigate('/rider');
       } else {
@@ -117,7 +117,7 @@ const AuthModal = ({ isOpen, onClose, type }: AuthModalProps) => {
 
       onClose();
       
-      // Redirection selon le type d'utilisateur
+      // Redirect based on user type
       if (type === 'rider') {
         navigate('/rider');
       } else {
